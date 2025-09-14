@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useWallet } from "./use-wallet"
 import { publicClient, CONTRACTS, THY_TOKEN_ABI, formatTokenAmount, parseTokenAmount } from "@/lib/web3"
 import type { Hash } from "viem"
+import { sepolia } from "viem/chains"
 
 interface TokenData {
   balance: string
@@ -95,6 +96,7 @@ export function useThyToken() {
           functionName: "transfer",
           args: [to as `0x${string}`, parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         // Wait for transaction confirmation
@@ -131,6 +133,7 @@ export function useThyToken() {
           functionName: "approve",
           args: [spender as `0x${string}`, parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         await publicClient.waitForTransactionReceipt({ hash })
@@ -162,6 +165,7 @@ export function useThyToken() {
           functionName: "mint",
           args: [to as `0x${string}`, parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         await publicClient.waitForTransactionReceipt({ hash })
@@ -194,6 +198,7 @@ export function useThyToken() {
           functionName: "burn",
           args: [parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         await publicClient.waitForTransactionReceipt({ hash })

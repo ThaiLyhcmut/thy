@@ -121,7 +121,7 @@ export const formatTokenAmount = (amount: bigint, decimals = 18): string => {
   const quotient = amount / divisor
   const remainder = amount % divisor
 
-  if (remainder === 0n) {
+  if (remainder === BigInt(0)) {
     return quotient.toString()
   }
 

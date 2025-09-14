@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useWallet } from "./use-wallet"
 import { publicClient, CONTRACTS, STAKING_ABI, formatTokenAmount, parseTokenAmount } from "@/lib/web3"
 import type { Hash } from "viem"
+import { sepolia } from "viem/chains"
 
 interface StakePool {
   id: number
@@ -133,7 +134,7 @@ export function useStaking() {
         address: CONTRACTS.STAKING_CONTRACT,
         abi: STAKING_ABI,
         functionName: "getUserStakeCount",
-        args: [address],
+        args: [address as `0x${string}`],
       })) as bigint
 
       const stakePromises = []
@@ -143,7 +144,7 @@ export function useStaking() {
             address: CONTRACTS.STAKING_CONTRACT,
             abi: STAKING_ABI,
             functionName: "getStakeInfo",
-            args: [address, BigInt(i)],
+            args: [address as `0x${string}`, BigInt(i)],
           }),
         )
       }
@@ -232,6 +233,8 @@ export function useStaking() {
           abi: STAKING_ABI,
           functionName: "stake",
           args: [parseTokenAmount(amount), BigInt(pool.lockPeriod), autoCompound],
+          account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         // Wait for transaction confirmation
@@ -267,6 +270,8 @@ export function useStaking() {
           abi: STAKING_ABI,
           functionName: "withdraw",
           args: [BigInt(stakeId)],
+          account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         console.log("[v0] Withdraw transaction hash:", hash)
@@ -306,6 +311,8 @@ export function useStaking() {
           abi: STAKING_ABI,
           functionName: "emergencyWithdraw",
           args: [BigInt(stakeId)],
+          account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         // Wait for transaction confirmation
@@ -337,6 +344,8 @@ export function useStaking() {
           abi: STAKING_ABI,
           functionName: "compoundRewards",
           args: [BigInt(stakeId)],
+          account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         // Wait for transaction confirmation

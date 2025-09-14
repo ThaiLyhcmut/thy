@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useWallet } from "./use-wallet"
 import { publicClient, CONTRACTS, LIQUIDITY_MINING_ABI, formatTokenAmount, parseTokenAmount } from "@/lib/web3"
 import type { Hash } from "viem"
+import { sepolia } from "viem/chains"
 
 interface PoolStats {
   totalStaked: string
@@ -82,20 +83,20 @@ export function useLiquidityMining() {
     if (!address) return
 
     try {
-      const [stats, tier] = await Promise.all([
+      const [stats, tier] = (await Promise.all([
         publicClient.readContract({
           address: CONTRACTS.LIQUIDITY_MINING,
           abi: LIQUIDITY_MINING_ABI,
           functionName: "getUserStats",
           args: [address as `0x${string}`],
-        }) as [bigint, bigint, bigint, bigint, string, bigint],
+        }),
         publicClient.readContract({
           address: CONTRACTS.LIQUIDITY_MINING,
           abi: LIQUIDITY_MINING_ABI,
           functionName: "getUserTier",
           args: [address as `0x${string}`],
-        }) as [bigint, bigint, string],
-      ])
+        }),
+      ])) as [[bigint, bigint, bigint, bigint, string, bigint], [bigint, bigint, string]]
 
       const [stakedAmount, pendingRewards, totalClaimed, tierMultiplier, tierName, stakingDuration] = stats
       const [tierIndex, multiplier, tierNameFromContract] = tier
@@ -137,6 +138,7 @@ export function useLiquidityMining() {
           functionName: "deposit",
           args: [parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         await publicClient.waitForTransactionReceipt({ hash })
@@ -169,6 +171,7 @@ export function useLiquidityMining() {
           functionName: "withdraw",
           args: [parsedAmount],
           account: address as `0x${string}`,
+          chain: sepolia,
         })
 
         await publicClient.waitForTransactionReceipt({ hash })
@@ -197,6 +200,7 @@ export function useLiquidityMining() {
         abi: LIQUIDITY_MINING_ABI,
         functionName: "claimRewards",
         account: address as `0x${string}`,
+        chain: sepolia,
       })
 
       await publicClient.waitForTransactionReceipt({ hash })
@@ -223,6 +227,7 @@ export function useLiquidityMining() {
         abi: LIQUIDITY_MINING_ABI,
         functionName: "emergencyWithdraw",
         account: address as `0x${string}`,
+        chain: sepolia,
       })
 
       await publicClient.waitForTransactionReceipt({ hash })
