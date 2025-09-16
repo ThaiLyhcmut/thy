@@ -1,8 +1,9 @@
 import { WalletConnect } from "@/components/wallet-connect"
+import { AdminButton } from "@/components/admin-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Coins, TrendingUp, Users, BarChart3, ArrowRight } from "lucide-react"
+import { Coins, TrendingUp, Users, BarChart3, ArrowRight, Image } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -21,7 +22,10 @@ export default function HomePage() {
                 <p className="text-sm text-muted-foreground">DeFi Platform</p>
               </div>
             </div>
-            <WalletConnect />
+            <div className="flex items-center gap-2">
+              <AdminButton />
+              <WalletConnect />
+            </div>
           </div>
         </div>
       </header>
@@ -85,7 +89,7 @@ export default function HomePage() {
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <Card className="bg-card border-border hover:border-primary/50 transition-colors">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -173,15 +177,15 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+          <Card className="bg-card border-border hover:border-purple-500/50 transition-colors">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-primary" />
+                <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <BarChart3 className="h-5 w-5 text-purple-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-card-foreground">Analytics Dashboard</CardTitle>
-                  <Badge variant="default" className="mt-1 bg-primary text-primary-foreground">
+                  <CardTitle className="text-card-foreground">Payment Gateway</CardTitle>
+                  <Badge variant="default" className="mt-1 bg-purple-500 text-white">
                     Available
                   </Badge>
                 </div>
@@ -189,11 +193,38 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <CardDescription className="text-muted-foreground">
-                Comprehensive insights into ecosystem performance, pool analytics, and personal portfolio tracking.
+                Secure crypto payments with THY tokens. Create payments, manage transactions, and track history.
               </CardDescription>
-              <Link href="/analytics">
-                <Button variant="outline" className="w-full gap-2 bg-transparent">
-                  View Analytics
+              <Link href="/payments">
+                <Button variant="outline" className="w-full gap-2 bg-purple-500/10 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white">
+                  Access Gateway
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border hover:border-orange-500/50 transition-colors">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <Image className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-card-foreground">Image Generator</CardTitle>
+                  <Badge variant="default" className="mt-1 bg-orange-500 text-white">
+                    New
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <CardDescription className="text-muted-foreground">
+                Generate Vietnamese word puzzle images. Pay with THY tokens - 0.01 THY per image.
+              </CardDescription>
+              <Link href="/generator">
+                <Button variant="outline" className="w-full gap-2 bg-orange-500/10 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
+                  Create Images
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -215,19 +246,19 @@ export default function HomePage() {
                 <div>
                   <p className="text-sm font-medium text-card-foreground mb-1">THY Token</p>
                   <code className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
-                    0xEc11b5cFF2C929379E66e429cdA6A8D0889109D5
+                    0xE32B76EC0Bf09F20f9C1fa3200fFEd5E8979C6d7
                   </code>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-card-foreground mb-1">Liquidity Mining</p>
                   <code className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
-                    0x4A5a782A54ce5B3F79b681347A66846DC34E8e7a
+                    0xD088dDD335B9893b8C1327ea6e4cb8de93a975ad
                   </code>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-card-foreground mb-1">Payment Gateway</p>
                   <code className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
-                    0xa7c6F0a4F6f928ED813F55De5C93a86e6bD3Abbe
+                    0xf786EAe3757e2E4dE3283Ff61FE99647b3C37b20
                   </code>
                 </div>
               </div>

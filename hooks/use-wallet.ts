@@ -36,20 +36,61 @@ export function useWallet() {
       })
 
       if (accounts.length > 0) {
+        // Get current chain ID
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        const currentChainId = Number.parseInt(chainId, 16)
+
+        // Switch to Sepolia if not already on it
+        if (currentChainId !== 11155111) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0xaa36a7" }], // 11155111 in hex
+            })
+          } catch (switchError: any) {
+            // This error code indicates that the chain has not been added to MetaMask
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: "wallet_addEthereumChain",
+                  params: [
+                    {
+                      chainId: "0xaa36a7",
+                      chainName: "Sepolia",
+                      nativeCurrency: {
+                        name: "Sepolia ETH",
+                        symbol: "SEP",
+                        decimals: 18,
+                      },
+                      rpcUrls: ["https://sepolia.infura.io/v3/"],
+                      blockExplorerUrls: ["https://sepolia.etherscan.io/"],
+                    },
+                  ],
+                })
+              } catch (addError) {
+                console.error("Failed to add Sepolia network:", addError)
+                setState((prev) => ({ ...prev, isConnecting: false }))
+                return
+              }
+            } else {
+              console.error("Failed to switch to Sepolia:", switchError)
+              setState((prev) => ({ ...prev, isConnecting: false }))
+              return
+            }
+          }
+        }
+
         const client = createWalletClientFromWindow()
         if (client) {
           setWalletClient(client)
-
-          // Get chain ID
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
 
           setState({
             address: accounts[0],
             isConnected: true,
             isConnecting: false,
-            chainId: Number.parseInt(chainId, 16),
+            chainId: 11155111,
           })
         }
       }
@@ -113,8 +154,21 @@ export function useWallet() {
         }
       }
 
-      const handleChainChanged = (chainId: string) => {
-        setState((prev) => ({ ...prev, chainId: Number.parseInt(chainId, 16) }))
+      const handleChainChanged = async (chainId: string) => {
+        const newChainId = Number.parseInt(chainId, 16)
+        setState((prev) => ({ ...prev, chainId: newChainId }))
+        
+        // Auto switch back to Sepolia if user changes to another chain
+        if (newChainId !== 11155111 && state.isConnected) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0xaa36a7" }],
+            })
+          } catch (error) {
+            console.error("Failed to switch back to Sepolia:", error)
+          }
+        }
       }
 
       window.ethereum.on("accountsChanged", handleAccountsChanged)

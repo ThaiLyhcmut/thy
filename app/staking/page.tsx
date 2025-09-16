@@ -1,4 +1,5 @@
 import { StakingPlatform } from "@/components/staking-platform"
+import { ChainWarning } from "@/components/chain-warning"
 import { WalletConnect } from "@/components/wallet-connect"
 import { ArrowLeft, Users } from "lucide-react"
 import Link from "next/link"
@@ -35,7 +36,10 @@ export default function StakingPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <StakingPlatform />
+        <div className="space-y-6">
+          <ChainWarning />
+          <StakingPlatform />
+        </div>
       </main>
     </div>
   )

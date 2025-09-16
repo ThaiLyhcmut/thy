@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useWallet } from "./use-wallet"
+import { useChainCheck } from "./use-chain-check"
 import { publicClient, CONTRACTS, THY_TOKEN_ABI, formatTokenAmount, parseTokenAmount } from "@/lib/web3"
 import type { Hash } from "viem"
 import { sepolia } from "viem/chains"
@@ -13,10 +14,13 @@ interface TokenData {
   symbol: string
   decimals: number
   isPaused: boolean
+  owner: string
+  isOwner: boolean
 }
 
 export function useThyToken() {
   const { address, walletClient, isConnected } = useWallet()
+  const { ensureCorrectChain } = useChainCheck()
   const [tokenData, setTokenData] = useState<TokenData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +32,7 @@ export function useThyToken() {
     setError(null)
 
     try {
-      const [balance, totalSupply, name, symbol, decimals, isPaused] = await Promise.all([
+      const [balance, totalSupply, name, symbol, decimals, isPaused, owner] = await Promise.all([
         publicClient.readContract({
           address: CONTRACTS.THY_TOKEN,
           abi: THY_TOKEN_ABI,
@@ -60,6 +64,11 @@ export function useThyToken() {
           abi: THY_TOKEN_ABI,
           functionName: "paused",
         }),
+        publicClient.readContract({
+          address: CONTRACTS.THY_TOKEN,
+          abi: THY_TOKEN_ABI,
+          functionName: "owner",
+        }),
       ])
 
       setTokenData({
@@ -69,6 +78,8 @@ export function useThyToken() {
         symbol: symbol as string,
         decimals: decimals as number,
         isPaused: isPaused as boolean,
+        owner: owner as string,
+        isOwner: address.toLowerCase() === (owner as string).toLowerCase(),
       })
     } catch (err) {
       console.error("Failed to fetch token data:", err)
@@ -82,6 +93,13 @@ export function useThyToken() {
     async (to: string, amount: string): Promise<Hash | null> => {
       if (!walletClient || !address) {
         setError("Wallet not connected")
+        return null
+      }
+
+      // Ensure we're on the correct chain before transaction
+      const chainSwitched = await ensureCorrectChain()
+      if (!chainSwitched) {
+        setError("Please switch to Sepolia network")
         return null
       }
 
@@ -112,7 +130,7 @@ export function useThyToken() {
         return null
       }
     },
-    [walletClient, address, fetchTokenData],
+    [walletClient, address, fetchTokenData, ensureCorrectChain],
   )
 
   const approve = useCallback(
@@ -154,6 +172,13 @@ export function useThyToken() {
         return null
       }
 
+      // Ensure we're on the correct chain before transaction
+      const chainSwitched = await ensureCorrectChain()
+      if (!chainSwitched) {
+        setError("Please switch to Sepolia network")
+        return null
+      }
+
       setError(null)
 
       try {
@@ -177,7 +202,7 @@ export function useThyToken() {
         return null
       }
     },
-    [walletClient, address, fetchTokenData],
+    [walletClient, address, fetchTokenData, ensureCorrectChain],
   )
 
   const burn = useCallback(
@@ -213,6 +238,114 @@ export function useThyToken() {
     [walletClient, address, fetchTokenData],
   )
 
+  const pause = useCallback(async (): Promise<Hash | null> => {
+    if (!walletClient || !address) {
+      setError("Wallet not connected")
+      return null
+    }
+
+    // Ensure we're on the correct chain before transaction
+    const chainSwitched = await ensureCorrectChain()
+    if (!chainSwitched) {
+      setError("Please switch to Sepolia network")
+      return null
+    }
+
+    setError(null)
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: CONTRACTS.THY_TOKEN,
+        abi: THY_TOKEN_ABI,
+        functionName: "pause",
+        args: [],
+        account: address as `0x${string}`,
+        chain: sepolia,
+      })
+
+      await publicClient.waitForTransactionReceipt({ hash })
+      await fetchTokenData()
+      return hash
+    } catch (err) {
+      console.error("Pause failed:", err)
+      setError("Pause failed")
+      return null
+    }
+  }, [walletClient, address, fetchTokenData, ensureCorrectChain])
+
+  const unpause = useCallback(async (): Promise<Hash | null> => {
+    if (!walletClient || !address) {
+      setError("Wallet not connected")
+      return null
+    }
+
+    // Ensure we're on the correct chain before transaction
+    const chainSwitched = await ensureCorrectChain()
+    if (!chainSwitched) {
+      setError("Please switch to Sepolia network")
+      return null
+    }
+
+    setError(null)
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: CONTRACTS.THY_TOKEN,
+        abi: THY_TOKEN_ABI,
+        functionName: "unpause",
+        args: [],
+        account: address as `0x${string}`,
+        chain: sepolia,
+      })
+
+      await publicClient.waitForTransactionReceipt({ hash })
+      await fetchTokenData()
+      return hash
+    } catch (err) {
+      console.error("Unpause failed:", err)
+      setError("Unpause failed")
+      return null
+    }
+  }, [walletClient, address, fetchTokenData, ensureCorrectChain])
+
+  const transferOwnership = useCallback(
+    async (newOwner: string): Promise<Hash | null> => {
+      if (!walletClient || !address) {
+        setError("Wallet not connected")
+        return null
+      }
+
+      // Ensure we're on the correct chain before transaction
+      const chainSwitched = await ensureCorrectChain()
+      if (!chainSwitched) {
+        setError("Please switch to Sepolia network")
+        return null
+      }
+
+      setError(null)
+
+      try {
+        const hash = await walletClient.writeContract({
+          address: CONTRACTS.THY_TOKEN,
+          abi: THY_TOKEN_ABI,
+          functionName: "transferOwnership",
+          args: [newOwner as `0x${string}`],
+          account: address as `0x${string}`,
+          chain: sepolia,
+        })
+
+        await publicClient.waitForTransactionReceipt({ hash })
+        await fetchTokenData()
+        return hash
+      } catch (err) {
+        console.error("Transfer ownership failed:", err)
+        setError("Transfer ownership failed")
+        return null
+      }
+    },
+    [walletClient, address, fetchTokenData, ensureCorrectChain],
+  )
+
   useEffect(() => {
     if (isConnected && address) {
       fetchTokenData()
@@ -227,6 +360,9 @@ export function useThyToken() {
     approve,
     mint,
     burn,
+    pause,
+    unpause,
+    transferOwnership,
     refetch: fetchTokenData,
   }
 }

@@ -12,6 +12,7 @@ import { useThyToken } from "@/hooks/use-thy-token"
 import { useWallet } from "@/hooks/use-wallet"
 import { Coins, Send, Plus, Minus, RefreshCw, AlertCircle, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { WalletAddressPicker } from "@/components/wallet-address-picker"
 
 export function TokenDashboard() {
   const { isConnected } = useWallet()
@@ -166,15 +167,23 @@ export function TokenDashboard() {
           <Tabs defaultValue="transfer" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="transfer">Transfer</TabsTrigger>
-              <TabsTrigger value="mint">Mint</TabsTrigger>
+              <TabsTrigger value="mint" disabled={!tokenData?.isOwner}>
+                Mint {!tokenData?.isOwner && "(Owner Only)"}
+              </TabsTrigger>
               <TabsTrigger value="burn">Burn</TabsTrigger>
             </TabsList>
 
             <TabsContent value="transfer" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="transfer-to" className="text-card-foreground">
-                  Recipient Address
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="transfer-to" className="text-card-foreground">
+                    Recipient Address
+                  </Label>
+                  <WalletAddressPicker 
+                    onSelectAddress={(address) => setTransferTo(address)}
+                    buttonText="Use My Address"
+                  />
+                </div>
                 <Input
                   id="transfer-to"
                   placeholder="0x..."
@@ -207,35 +216,52 @@ export function TokenDashboard() {
             </TabsContent>
 
             <TabsContent value="mint" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="mint-to" className="text-card-foreground">
-                  Mint To Address
-                </Label>
-                <Input
-                  id="mint-to"
-                  placeholder="0x..."
-                  value={mintTo}
-                  onChange={(e) => setMintTo(e.target.value)}
-                  className="bg-input border-border text-foreground"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mint-amount" className="text-card-foreground">
-                  Amount
-                </Label>
-                <Input
-                  id="mint-amount"
-                  type="number"
-                  placeholder="0.0"
-                  value={mintAmount}
-                  onChange={(e) => setMintAmount(e.target.value)}
-                  className="bg-input border-border text-foreground"
-                />
-              </div>
-              <Button onClick={handleMint} disabled={!mintTo || !mintAmount || isTransacting} className="w-full gap-2">
-                <Plus className="h-4 w-4" />
-                {isTransacting ? "Minting..." : "Mint THY"}
-              </Button>
+              {!tokenData?.isOwner ? (
+                <Alert className="border-destructive/50 bg-destructive/10">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                  <AlertDescription className="text-destructive">
+                    Only the contract owner can mint new tokens
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="mint-to" className="text-card-foreground">
+                        Mint To Address
+                      </Label>
+                      <WalletAddressPicker 
+                        onSelectAddress={(address) => setMintTo(address)}
+                        buttonText="Use My Address"
+                      />
+                    </div>
+                    <Input
+                      id="mint-to"
+                      placeholder="0x..."
+                      value={mintTo}
+                      onChange={(e) => setMintTo(e.target.value)}
+                      className="bg-input border-border text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mint-amount" className="text-card-foreground">
+                      Amount
+                    </Label>
+                    <Input
+                      id="mint-amount"
+                      type="number"
+                      placeholder="0.0"
+                      value={mintAmount}
+                      onChange={(e) => setMintAmount(e.target.value)}
+                      className="bg-input border-border text-foreground"
+                    />
+                  </div>
+                  <Button onClick={handleMint} disabled={!mintTo || !mintAmount || isTransacting} className="w-full gap-2">
+                    <Plus className="h-4 w-4" />
+                    {isTransacting ? "Minting..." : "Mint THY"}
+                  </Button>
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value="burn" className="space-y-4">

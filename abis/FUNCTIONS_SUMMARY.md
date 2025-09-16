@@ -2,9 +2,11 @@
 
 **Complete ABI functions cho từng contract với input/output parameters**
 
+**🚨 UPDATED: September 14, 2025 - New Contract Addresses**
+
 ---
 
-## 🪙 ThailyToken (`0xEc11b5cFF2C929379E66e429cdA6A8D0889109D5`)
+## 🪙 ThailyToken (`0xE32B76EC0Bf09F20f9C1fa3200fFEd5E8979C6d7`)
 
 ### Core ERC-20 Functions
 ```javascript
@@ -46,7 +48,7 @@ version() → string // Returns "1.0.0"
 
 ---
 
-## 🌾 THYLiquidityMining (`0x4A5a782A54ce5B3F79b681347A66846DC34E8e7a`)
+## 🌾 THYLiquidityMining (`0xD088dDD335B9893b8C1327ea6e4cb8de93a975ad`)
 
 ### Core Farming Functions
 ```javascript
@@ -81,7 +83,7 @@ toggleEmergencyMode() → void
 
 ---
 
-## 🏦 THYStaking (`0x5985545CCe0Eb0859C67cf87C559b95AC59FD6D1`)
+## 🏦 THYStaking (`0x63e9092655a6671C59E08Fcd6Bb2540dCbEB07D8`)
 
 ### Staking Operations
 ```javascript
@@ -113,7 +115,7 @@ earlyWithdrawPenalty() → uint256 // 2500 = 25%
 
 ---
 
-## 🗳️ THYGovernance (`0x424560Ac25eA02575F378BA5eD15E3f473D4b6D6`)
+## 🗳️ THYGovernance (`0x20Cbb8a108A577Ac3C65bCEC5d38Ce1469b4CB5c`)
 
 ### Proposal Management
 ```javascript
@@ -146,7 +148,7 @@ quorumVotes() → uint256
 
 ---
 
-## 💳 THYPaymentGateway (`0xa7c6F0a4F6f928ED813F55De5C93a86e6bD3Abbe`)
+## 💳 THYPaymentGateway (`0xf786EAe3757e2E4dE3283Ff61FE99647b3C37b20`)
 
 ### Payment Processing
 ```javascript
@@ -177,7 +179,7 @@ withdrawFees(token: address) → void
 
 ---
 
-## 🔄 MockUniswapV2Pair (`0x74564A0a923e2b362576a93aaf4910059010FB7B`)
+## 🔄 MockUniswapV2Pair (`0xB7F8e32Ee85f07a2fbd80e3865Fa90BE8F9BE092`)
 
 ### LP Token Functions
 ```javascript

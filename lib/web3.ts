@@ -1,14 +1,22 @@
 import { createPublicClient, createWalletClient, custom, http, parseAbi } from "viem"
 import { sepolia } from "viem/chains"
+import { PAYMENT_GATEWAY_ABI } from "./payment-gateway-abi"
+import { GOVERNANCE_ABI } from "./governance-abi"
 
-// Contract addresses from the documentation
+// Contract addresses - Updated September 15, 2025 (LATEST DEPLOYMENT)
 export const CONTRACTS = {
-  THY_TOKEN: "0xEc11b5cFF2C929379E66e429cdA6A8D0889109D5",
-  LIQUIDITY_MINING: "0x4A5a782A54ce5B3F79b681347A66846DC34E8e7a",
-  PAYMENT_GATEWAY: "0xa7c6F0a4F6f928ED813F55De5C93a86e6bD3Abbe",
-  STAKING_CONTRACT: "0x5985545CCe0Eb0859C67cf87C559b95AC59FD6D1",
-  GOVERNANCE: "0x424560Ac25eA02575F378BA5eD15E3f473D4b6D6",
-  LP_TOKEN: "0x74564A0a923e2b362576a93aaf4910059010FB7B",
+  THY_TOKEN: "0xE32B76EC0Bf09F20f9C1fa3200fFEd5E8979C6d7" as `0x${string}`,
+  THY_LIQUIDITY_MINING: "0x3902DF4a9Fd5d59BF8A6c35c276096CE26153BB4" as `0x${string}`,
+  THY_PAYMENT_GATEWAY: "0xf786EAe3757e2E4dE3283Ff61FE99647b3C37b20" as `0x${string}`,
+  THY_STAKING: "0x63e9092655a6671C59E08Fcd6Bb2540dCbEB07D8" as `0x${string}`,
+  THY_GOVERNANCE: "0x20Cbb8a108A577Ac3C65bCEC5d38Ce1469b4CB5c" as `0x${string}`,
+  MOCK_UNISWAP_V2_PAIR: "0x88af65ACcb320d4d831f507a66242C6c94dCC90A" as `0x${string}`,
+  // Aliases for backward compatibility
+  LIQUIDITY_MINING: "0x3902DF4a9Fd5d59BF8A6c35c276096CE26153BB4" as `0x${string}`,
+  PAYMENT_GATEWAY: "0xf786EAe3757e2E4dE3283Ff61FE99647b3C37b20" as `0x${string}`,
+  STAKING_CONTRACT: "0x63e9092655a6671C59E08Fcd6Bb2540dCbEB07D8" as `0x${string}`,
+  GOVERNANCE: "0x20Cbb8a108A577Ac3C65bCEC5d38Ce1469b4CB5c" as `0x${string}`,
+  LP_TOKEN: "0x88af65ACcb320d4d831f507a66242C6c94dCC90A" as `0x${string}`,
 } as const
 
 // THY Token ABI (simplified for main functions)
@@ -26,14 +34,19 @@ export const THY_TOKEN_ABI = parseAbi([
   "function pause()",
   "function unpause()",
   "function paused() view returns (bool)",
+  "function owner() view returns (address)",
+  "function transferOwnership(address newOwner)",
+  "function renounceOwnership()",
 ])
 
 // Liquidity Mining ABI (key functions)
 export const LIQUIDITY_MINING_ABI = parseAbi([
+  // User functions
   "function deposit(uint256 amount)",
   "function withdraw(uint256 amount)",
   "function claimRewards()",
   "function emergencyWithdraw()",
+  // View functions
   "function pendingReward(address user) view returns (uint256)",
   "function getUserTier(address user) view returns (uint256 tierIndex, uint256 multiplier, string tierName)",
   "function getPoolStats() view returns (uint256 totalStaked, uint256 totalRewardsDistributed, uint256 totalUsers, uint256 totalFeesCollected, uint256 currentAPR)",
@@ -45,6 +58,16 @@ export const LIQUIDITY_MINING_ABI = parseAbi([
   "function endBlock() view returns (uint256)",
   "function bonusEndBlock() view returns (uint256)",
   "function bonusMultiplier() view returns (uint256)",
+  "function pool() view returns (address lpToken, uint256 allocPoint, uint256 lastRewardBlock, uint256 accRewardPerShare, uint256 depositFeeBP, uint256 withdrawFeeBP)",
+  // Owner/Admin functions
+  "function owner() view returns (address)",
+  "function transferOwnership(address newOwner)",
+  "function renounceOwnership()",
+  "function setRewardPerBlock(uint256 _rewardPerBlock)",
+  "function updatePoolInfo(uint256 _allocPoint, uint256 _depositFeeBP, uint256 _withdrawFeeBP)",
+  "function setBonusMultiplier(uint256 _bonusMultiplier)",
+  "function toggleEmergencyMode()",
+  // Events
   "event Deposit(address indexed user, uint256 amount, uint256 depositFee)",
   "event Withdraw(address indexed user, uint256 amount, uint256 withdrawFee)",
   "event Claim(address indexed user, uint256 reward, uint256 multiplier)",
@@ -140,3 +163,6 @@ export const parseTokenAmount = (amount: string, decimals = 18): bigint => {
   const paddedFraction = fraction.padEnd(decimals, "0").slice(0, decimals)
   return BigInt(whole + paddedFraction)
 }
+
+// Export ABIs
+export { PAYMENT_GATEWAY_ABI, GOVERNANCE_ABI }

@@ -1,11 +1,11 @@
-import { LiquidityMining } from "@/components/liquidity-mining"
+import { PaymentGatewayReal } from "@/components/payment-gateway-real"
 import { ChainWarning } from "@/components/chain-warning"
 import { WalletConnect } from "@/components/wallet-connect"
-import { ArrowLeft, TrendingUp } from "lucide-react"
+import { ArrowLeft, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-export default function FarmingPage() {
+export default function PaymentsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -20,12 +20,12 @@ export default function FarmingPage() {
                 </Button>
               </Link>
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-secondary-foreground" />
+                <div className="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Liquidity Mining</h1>
-                  <p className="text-sm text-muted-foreground">Yield farming with loyalty rewards</p>
+                  <h1 className="text-xl font-bold text-foreground">Payment Gateway</h1>
+                  <p className="text-sm text-muted-foreground">Secure crypto payments with THY</p>
                 </div>
               </div>
             </div>
@@ -38,7 +38,7 @@ export default function FarmingPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-6">
           <ChainWarning />
-          <LiquidityMining />
+          <PaymentGatewayReal />
         </div>
       </main>
     </div>

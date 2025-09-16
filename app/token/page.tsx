@@ -1,4 +1,6 @@
 import { TokenDashboard } from "@/components/token-dashboard"
+import { AdminPanel } from "@/components/admin-panel"
+import { ChainWarning } from "@/components/chain-warning"
 import { WalletConnect } from "@/components/wallet-connect"
 import { ArrowLeft, Coins } from "lucide-react"
 import Link from "next/link"
@@ -35,7 +37,11 @@ export default function TokenPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <TokenDashboard />
+        <div className="space-y-6">
+          <ChainWarning />
+          <AdminPanel />
+          <TokenDashboard />
+        </div>
       </main>
     </div>
   )
