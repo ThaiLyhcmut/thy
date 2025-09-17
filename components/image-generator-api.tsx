@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useWallet } from "@/hooks/use-wallet"
 import { usePaymentApi, type PaymentRequest } from "@/hooks/use-payment-api"
-import { Image, Download, Coins, Paintbrush, AlertCircle, CheckCircle, Clock, History, RefreshCw } from "lucide-react"
+import { Image, Download, Coins, Paintbrush, AlertCircle, CheckCircle, Clock, History, RefreshCw, Gamepad2, Shuffle, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { PhraseGeneratorSimple } from "./phrase-generator-simple"
 
 // PaymentRequest type is imported from the usePaymentApi hook
 
@@ -24,28 +25,28 @@ interface GeneratedImage {
   timestamp: string
 }
 
-const DEFAULT_PHRASES = [
-  "Xin chào bạn",
-  "Hẹn gặp lại", 
-  "Chúc bạn một ngày tốt lành",
-  "Tôi đang học lập trình",
-  "Trời hôm nay thật đẹp",
-  "Bạn có khỏe không",
-  "Chúng ta cùng đi ăn trưa",
-  "Cuộc sống là những chuyến đi",
-  "Gia đình là số một",
-  "Thành công đến từ nỗ lực",
-  "Cà phê sữa đá buổi sáng",
-  "Hạnh phúc giản đơn",
-  "Thời gian quý hơn vàng",
-  "Tình bạn mãi mãi",
-  "Ước mơ không bao giờ tắt",
-  "Sách là kho tàng tri thức",
-  "Mỗi ngày một niềm vui",
-  "Nụ cười tỏa nắng",
-  "Học tập suốt đời",
-  "Vượt qua thử thách"
-]
+// Categories từ Word Generator
+const CATEGORIES = {
+  provinces: { name: "63 Tỉnh Thành", desc: "Tỉnh thành Việt Nam", icon: "🏛️" },
+  landmarks: { name: "Địa Danh", desc: "Địa danh nổi tiếng VN", icon: "🏰" },
+  food: { name: "Đồ Ăn", desc: "Món ăn, thức uống VN", icon: "🍜" },
+  reduplicated: { name: "Từ Láy", desc: "Từ láy tiếng Việt", icon: "🔄" },
+  compound: { name: "Từ Ghép", desc: "Từ ghép phổ biến", icon: "🧩" },
+  animals: { name: "Động Vật", desc: "Con vật quen thuộc", icon: "🐕" },
+  colors: { name: "Màu Sắc", desc: "Các màu cơ bản", icon: "🎨" },
+  jobs: { name: "Nghề Nghiệp", desc: "Các nghề phổ biến", icon: "👨‍💼" },
+  family: { name: "Gia Đình", desc: "Người thân trong nhà", icon: "👨‍👩‍👧‍👦" },
+  school: { name: "Trường Học", desc: "Từ vựng học tập", icon: "🎓" },
+  sports: { name: "Thể Thao", desc: "Các môn thể thao", icon: "⚽" },
+  nature: { name: "Thiên Nhiên", desc: "Tự nhiên, thời tiết", icon: "🌳" },
+  transport: { name: "Phương Tiện", desc: "Các loại xe, tàu", icon: "🚗" },
+  body: { name: "Cơ Thể", desc: "Bộ phận cơ thể", icon: "👤" },
+  emotions: { name: "Cảm Xúc", desc: "Tình cảm, cảm xúc", icon: "😊" },
+  weather: { name: "Thời Tiết", desc: "Thời tiết, khí hậu", icon: "🌤️" },
+  items: { name: "Đồ Dùng", desc: "Vật dụng hàng ngày", icon: "📝" },
+  all: { name: "Tất Cả", desc: "Trộn tất cả chủ đề", icon: "🎲" }
+}
+
 
 interface ImageGeneratorApiProps {
   selectedWords?: string[]
@@ -74,7 +75,6 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
   const { toast } = useToast()
   
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [customText, setCustomText] = useState("")
   const [selectedPhrases, setSelectedPhrases] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
@@ -88,6 +88,15 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
   const [buyAmount, setBuyAmount] = useState("1.0") // THY amount to buy
   const [paymentHistory, setPaymentHistory] = useState<PaymentRequest[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  // Word Generator states
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [customPrompt, setCustomPrompt] = useState<string>("")
+  const [wordCount, setWordCount] = useState<number>(20)
+  const [difficulty, setDifficulty] = useState<string>("mixed")
+  const [generatedWords, setGeneratedWords] = useState<string[]>([])
+  const [isLoadingWords, setIsLoadingWords] = useState<boolean>(false)
+  const [useCohere, setUseCohere] = useState<boolean>(false)
 
   // Auto-select words from Word Generator
   useEffect(() => {
@@ -149,6 +158,97 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
       })
     } finally {
       setHistoryLoading(false)
+    }
+  }
+
+  // Word Generator functions
+  const generateWords = async () => {
+    setIsLoadingWords(true)
+    try {
+      if (useCohere && customPrompt.trim()) {
+        // Sử dụng Cohere API với custom prompt
+        const response = await fetch('/api/cohere/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: customPrompt,
+            max_tokens: 500,
+            temperature: 0.8
+          })
+        })
+
+        const data = await response.json()
+        const generatedWords = data.text
+          .split('\n')
+          .map((word: string) => word.trim())
+          .filter((word: string) => word && !word.match(/^\d+\./) && !word.startsWith('-'))
+          .slice(0, wordCount)
+
+        setGeneratedWords(generatedWords)
+        toast({
+          title: "Thành công!",
+          description: `Đã tạo ${generatedWords.length} từ vựng với AI`,
+        })
+      } else {
+        // Sử dụng API có sẵn
+        const response = await fetch(`/api/minigame-words?category=${selectedCategory}&count=${wordCount}&difficulty=${difficulty}`)
+        const data = await response.json()
+
+        if (data.success) {
+          setGeneratedWords(data.words)
+          toast({
+            title: "Thành công!",
+            description: `Đã tạo ${data.words.length} từ vựng`,
+          })
+        } else {
+          throw new Error(data.error)
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể tạo từ vựng",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingWords(false)
+    }
+  }
+
+  const copyGeneratedWords = async () => {
+    const wordsList = generatedWords.join('\n')
+    await navigator.clipboard.writeText(wordsList)
+    toast({
+      title: "Đã copy!",
+      description: "Đã sao chép danh sách từ vựng",
+    })
+  }
+
+  const downloadGeneratedWords = () => {
+    const wordsList = generatedWords.join('\n')
+    const blob = new Blob([wordsList], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `minigame-words-${selectedCategory}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: "Đã tải xuống!",
+      description: "File từ vựng đã được lưu",
+    })
+  }
+
+  const addWordsToGeneration = () => {
+    if (generatedWords.length > 0) {
+      setSelectedPhrases(prev => [...prev, ...generatedWords])
+      toast({
+        title: "Đã thêm từ vựng!",
+        description: `Đã thêm ${generatedWords.length} từ vào danh sách tạo hình ảnh`,
+      })
     }
   }
 
@@ -425,9 +525,6 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
     }
 
     const textsToGenerate = [...selectedPhrases]
-    if (customText.trim()) {
-      textsToGenerate.push(customText.trim())
-    }
 
     const imageCount = textsToGenerate.length
     if (imageCount > walletStats.availableCredits) {
@@ -545,82 +642,6 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
     }
   }, [generatedImages, toast])
 
-  // Generate all selected phrases automatically
-  const generateAllFromPhrases = useCallback(async () => {
-    if (selectedPhrases.length === 0) {
-      toast({
-        title: "No Phrases Selected",
-        description: "Please select phrases to generate images",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const stats = getPaymentStats()
-    if (stats.availableCredits < selectedPhrases.length) {
-      toast({
-        title: "Insufficient Credits", 
-        description: `You need ${selectedPhrases.length} credits but only have ${stats.availableCredits}`,
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsGenerating(true)
-    
-    try {
-      const newImages: GeneratedImage[] = []
-
-      for (let i = 0; i < selectedPhrases.length; i++) {
-        const text = selectedPhrases[i]
-        const maskedText = maskText(text)
-        const dataUrl = generateImageOnCanvas(maskedText, text)
-        
-        if (dataUrl) {
-          newImages.push({
-            id: Date.now().toString() + Math.random(),
-            originalText: text,
-            maskedText,
-            dataUrl,
-            timestamp: new Date().toLocaleString()
-          })
-        }
-
-        // Small delay between generations
-        await new Promise(resolve => setTimeout(resolve, 300))
-      }
-
-      setGeneratedImages(prev => [...newImages, ...prev])
-      
-      toast({
-        title: "Generation Complete",
-        description: `Generated ${newImages.length} images from selected phrases!`,
-      })
-
-      // Auto download all after generation
-      setTimeout(() => {
-        downloadAllImages()
-      }, 1000)
-
-    } catch (error) {
-      toast({
-        title: "Generation Failed", 
-        description: "Failed to generate images",
-        variant: "destructive",
-      })
-    }
-
-    setIsGenerating(false)
-  }, [selectedPhrases, getPaymentStats, maskText, generateImageOnCanvas, downloadAllImages, toast])
-
-  // Handle phrase selection
-  const togglePhrase = (phrase: string) => {
-    setSelectedPhrases(prev => 
-      prev.includes(phrase)
-        ? prev.filter(p => p !== phrase)
-        : [...prev, phrase]
-    )
-  }
 
   if (!isConnected) {
     return (
@@ -638,7 +659,7 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
     )
   }
 
-  const totalSelected = selectedPhrases.length + (customText.trim() ? 1 : 0)
+  const totalSelected = selectedPhrases.length
   const requiredThy = totalSelected * PRICE_PER_IMAGE
   const stats = getPaymentStats()
 
@@ -937,46 +958,158 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
         </Card>
       </div>
 
-      {/* Content Selection with AI Generator */}
-      <Tabs defaultValue="ai-generator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="ai-generator">AI Phrase Generator</TabsTrigger>
-          <TabsTrigger value="custom">Custom Text</TabsTrigger>
-        </TabsList>
+      {/* Word Generator Section */}
+      <div className="w-full">
 
-        <TabsContent value="ai-generator" className="space-y-4">
-          <PhraseGeneratorSimple
-            selectedPhrases={selectedPhrases}
-            onPhrasesChange={setSelectedPhrases}
-            onDownloadAll={generateAllFromPhrases}
-          />
-        </TabsContent>
-
-        <TabsContent value="custom" className="space-y-4">
-          <Card className="bg-card border-border">
+        <div className="space-y-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-card-foreground">Custom Vietnamese Text</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Enter your own Vietnamese text to generate puzzle image
+              <CardTitle className="flex items-center gap-2">
+                <Gamepad2 className="h-5 w-5" />
+                Tạo Từ Vựng Minigame
+              </CardTitle>
+              <CardDescription>
+                Tạo từ vựng tiếng Việt cho các minigame, word puzzle và trò chơi từ vựng
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="custom-text" className="text-card-foreground">
-                  Vietnamese Text
-                </Label>
-                <Input
-                  id="custom-text"
-                  placeholder="Enter Vietnamese text..."
-                  value={customText}
-                  onChange={(e) => setCustomText(e.target.value)}
-                  className="bg-input border-border text-foreground"
-                />
+            <CardContent className="space-y-6">
+              {/* Category Selection */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Chọn Chủ Đề Nhanh:</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {Object.entries(CATEGORIES).map(([key, category]) => (
+                    <Button
+                      key={key}
+                      variant={selectedCategory === key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedCategory(key)}
+                      className="justify-start text-left h-auto p-3"
+                    >
+                      <span className="mr-2">{category.icon}</span>
+                      <div>
+                        <div className="font-medium text-xs">{category.name}</div>
+                        <div className="text-xs opacity-70">{category.desc}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
               </div>
+
+              <Separator />
+
+              {/* Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="count">Số lượng từ</Label>
+                  <Input
+                    id="count"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={wordCount}
+                    onChange={(e) => setWordCount(parseInt(e.target.value) || 20)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Độ khó</Label>
+                  <Select value={difficulty} onValueChange={setDifficulty}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="easy">Dễ (≤6 ký tự)</SelectItem>
+                      <SelectItem value="medium">Trung bình (7-10 ký tự)</SelectItem>
+                      <SelectItem value="hard">Khó (>10 ký tự)</SelectItem>
+                      <SelectItem value="mixed">Hỗn hợp</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Phương thức</Label>
+                  <Select value={useCohere ? "cohere" : "preset"} onValueChange={(value) => setUseCohere(value === "cohere")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="preset">Từ có sẵn</SelectItem>
+                      <SelectItem value="cohere">AI Cohere</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Custom Prompt for Cohere */}
+              {useCohere && (
+                <div className="space-y-2">
+                  <Label htmlFor="prompt">Prompt tùy chỉnh (cho AI):</Label>
+                  <Textarea
+                    id="prompt"
+                    placeholder="Ví dụ: Tạo 20 từ vựng về động vật hoang dã ở Việt Nam..."
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              )}
+
+              {/* Generate Button */}
+              <Button
+                onClick={generateWords}
+                disabled={isLoadingWords || (useCohere && !customPrompt.trim())}
+                className="w-full"
+                size="lg"
+              >
+                <Shuffle className="mr-2 h-4 w-4" />
+                {isLoadingWords ? "Đang tạo..." : "Tạo Từ Vựng"}
+              </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+
+          {/* Generated Words Results */}
+          {generatedWords.length > 0 && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Kết Quả ({generatedWords.length} từ)</CardTitle>
+                  <CardDescription>
+                    Chủ đề: {CATEGORIES[selectedCategory as keyof typeof CATEGORIES]?.name} |
+                    Độ khó: {difficulty === "mixed" ? "Hỗn hợp" : difficulty === "easy" ? "Dễ" : difficulty === "medium" ? "Trung bình" : "Khó"}
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    onClick={addWordsToGeneration}
+                    className="bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600"
+                  >
+                    <Paintbrush className="h-4 w-4 mr-1" />
+                    Thêm vào Tạo Hình
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={copyGeneratedWords}>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={downloadGeneratedWords}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Tải xuống
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {generatedWords.map((word, index) => (
+                    <Badge key={index} variant="secondary" className="text-center justify-center py-2">
+                      {word}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
 
       {/* Generate Images Section */}
       <div className="space-y-4">

@@ -43,7 +43,7 @@ interface ProcessResponse {
   error?: string
 }
 
-const API_BASE_URL = "http://localhost:3001"
+const API_BASE_URL = "https://thygateaway.thaily.id.vn"
 const MERCHANT_API_KEY = "thy_d96ada63160fa4575f0ed14f428edab07ed9adfe108c11f6b8ad79ac20c7e8a9"
 
 export function usePaymentApi() {

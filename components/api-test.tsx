@@ -9,7 +9,7 @@ import { parseUnits } from "viem"
 import { AlertCircle, CheckCircle, Zap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-const API_BASE_URL = "http://localhost:3001"
+const API_BASE_URL = "https://thygateaway.thaily.id.vn"
 const MERCHANT_API_KEY = "thy_83fc9270094fc6e5caaf696ca7203dc4d672abc5492c588533abb241a5499cd6"
 
 export function ApiTest() {
