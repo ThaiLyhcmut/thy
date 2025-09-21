@@ -215,7 +215,7 @@ export function ImageGenerator() {
     } catch (error) {
       toast({
         title: "Payment Creation Failed",
-        description: error || "Failed to create payment",
+        description: String(error) || "Failed to create payment",
         variant: "destructive",
       })
     }
@@ -240,7 +240,7 @@ export function ImageGenerator() {
     } catch (error) {
       toast({
         title: "Payment Processing Failed",
-        description: error || "Failed to process payment",
+        description: String(error) || "Failed to process payment",
         variant: "destructive",
       })
     }
@@ -520,7 +520,7 @@ export function ImageGenerator() {
 
           <Button
             onClick={handleGenerate}
-            disabled={stats.remainingCredits <= 0 || isGenerating || isLoading || pendingPaymentId}
+            disabled={stats.remainingCredits <= 0 || isGenerating || isLoading || !!pendingPaymentId}
             variant="secondary"
             className="gap-2"
           >

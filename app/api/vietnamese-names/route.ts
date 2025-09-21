@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   try {
     const { count = 63, gender = 'all', style = 'traditional' } = await request.json()
 
-    let names = []
+    let names: string[] = []
 
     if (style === 'traditional') {
       names = [...VIETNAMESE_NAMES]

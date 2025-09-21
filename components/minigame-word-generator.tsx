@@ -184,7 +184,7 @@ export function MinigameWordGenerator({ onWordsSelected }: MinigameWordGenerator
                 <SelectContent>
                   <SelectItem value="easy">Dễ (≤6 ký tự)</SelectItem>
                   <SelectItem value="medium">Trung bình (7-10 ký tự)</SelectItem>
-                  <SelectItem value="hard">Khó (>10 ký tự)</SelectItem>
+                  <SelectItem value="hard">Khó (&gt;10 ký tự)</SelectItem>
                   <SelectItem value="mixed">Hỗn hợp</SelectItem>
                 </SelectContent>
               </Select>

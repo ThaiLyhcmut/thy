@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useWallet } from "@/hooks/use-wallet"
 import { useChainCheck } from "@/hooks/use-chain-check"
 import { publicClient, CONTRACTS, PAYMENT_GATEWAY_ABI } from "@/lib/web3"
+import { sepolia } from "viem/chains"
 import { AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -76,6 +77,7 @@ export function PaymentTest() {
         functionName: "registerMerchant",
         args: ["Test Merchant", "test.example.com"],
         account: address as `0x${string}`,
+        chain: sepolia,
       })
 
       console.log("Registration tx:", registerHash)

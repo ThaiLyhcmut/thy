@@ -33,14 +33,14 @@ export function PaymentGatewayAdmin() {
   if (!isOwner) return null
 
   const handleSetFeeRate = async () => {
-    if (!tokenAddress || !feeRate || !walletClient) return
+    if (!feeRate || !walletClient) return
     setIsTransacting(true)
     try {
       const hash = await walletClient.writeContract({
         address: CONTRACTS.THY_PAYMENT_GATEWAY,
         abi: PAYMENT_GATEWAY_ABI,
-        functionName: "setFeeRate",
-        args: [tokenAddress as `0x${string}`, BigInt(Number(feeRate) * 100)], // Convert percentage to basis points
+        functionName: "setProcessingFee",
+        args: [BigInt(Number(feeRate) * 100)], // Convert percentage to basis points
         account: address as `0x${string}`,
         chain: sepolia,
       })
@@ -69,8 +69,8 @@ export function PaymentGatewayAdmin() {
       const hash = await walletClient.writeContract({
         address: CONTRACTS.THY_PAYMENT_GATEWAY,
         abi: PAYMENT_GATEWAY_ABI,
-        functionName: "setMerchantStatus",
-        args: [BigInt(merchantId), merchantActive],
+        functionName: "toggleMerchant",
+        args: [merchantId as `0x${string}`],
         account: address as `0x${string}`,
         chain: sepolia,
       })
@@ -99,7 +99,7 @@ export function PaymentGatewayAdmin() {
         address: CONTRACTS.THY_PAYMENT_GATEWAY,
         abi: PAYMENT_GATEWAY_ABI,
         functionName: "withdrawFees",
-        args: [withdrawToken as `0x${string}`],
+        args: [BigInt(withdrawToken)],
         account: address as `0x${string}`,
         chain: sepolia,
       })

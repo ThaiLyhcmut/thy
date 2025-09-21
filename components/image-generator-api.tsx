@@ -333,7 +333,7 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
 
   // Handle THY approval
   const handleApproval = async () => {
-    const totalPhrases = selectedPhrases.length + (customText.trim() ? 1 : 0)
+    const totalPhrases = selectedPhrases.length + (customPrompt.trim() ? 1 : 0)
     const totalAmount = totalPhrases * PRICE_PER_IMAGE
 
     const success = await approveThyToken(totalAmount)
@@ -425,7 +425,7 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
 
     toast({
       title: "Payment Resumed",
-      description: `Resuming payment for ${payment.amount} THY → ${Math.floor(payment.amount * 100)} credits`,
+      description: `Resuming payment for ${payment.amount} THY → ${Math.floor(Number(payment.amount) * 100)} credits`,
     })
 
     // Check allowance and approve if needed
@@ -849,7 +849,7 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
                     className="gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <Coins className="h-4 w-4" />
-                    {paymentStep === 'paying' ? "Processing..." : "Pay Now"}
+                    {isLoading ? "Processing..." : "Pay Now"}
                   </Button>
                 )}
 
@@ -925,14 +925,14 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
                               {payment.amount} THY
                             </span>
                             <span className="text-sm text-gray-500">
-                              → {Math.floor(payment.amount * 100)} credits
+                              → {Math.floor(Number(payment.amount) * 100)} credits
                             </span>
                           </div>
                           <div className="text-sm text-gray-600 mt-1">
                             {payment.metadata.description}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            Created: {new Date(payment.createdAt).toLocaleString()}
+                            Created: {new Date(typeof payment.createdAt === 'string' ? payment.createdAt : payment.createdAt.$date).toLocaleString()}
                           </div>
                         </div>
 
@@ -1020,7 +1020,7 @@ export function ImageGeneratorApi({ selectedWords = [] }: ImageGeneratorApiProps
                     <SelectContent>
                       <SelectItem value="easy">Dễ (≤6 ký tự)</SelectItem>
                       <SelectItem value="medium">Trung bình (7-10 ký tự)</SelectItem>
-                      <SelectItem value="hard">Khó (>10 ký tự)</SelectItem>
+                      <SelectItem value="hard">Khó (&gt;10 ký tự)</SelectItem>
                       <SelectItem value="mixed">Hỗn hợp</SelectItem>
                     </SelectContent>
                   </Select>

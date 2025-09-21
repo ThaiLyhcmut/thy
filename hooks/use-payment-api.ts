@@ -54,7 +54,7 @@ export function usePaymentApi() {
   const [error, setError] = useState<string | null>(null)
   const [currentPayment, setCurrentPayment] = useState<PaymentRequest | null>(null)
   const [allowanceStatus, setAllowanceStatus] = useState<'checking' | 'insufficient' | 'sufficient' | 'error'>('checking')
-  const [currentAllowance, setCurrentAllowance] = useState<bigint>(0n)
+  const [currentAllowance, setCurrentAllowance] = useState<bigint>(BigInt(0))
 
   const PRICE_PER_IMAGE = 0.01
 
@@ -97,7 +97,7 @@ export function usePaymentApi() {
         return sufficient
       } else {
         // Just checking general allowance status
-        const hasAllowance = (allowance as bigint) > 0n
+        const hasAllowance = (allowance as bigint) > BigInt(0)
         console.log(`General allowance check - has allowance: ${hasAllowance}`)
         setAllowanceStatus(hasAllowance ? 'sufficient' : 'insufficient')
         return true

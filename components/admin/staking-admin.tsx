@@ -81,12 +81,10 @@ export function StakingAdmin() {
       const hash = await walletClient.writeContract({
         address: CONTRACTS.THY_STAKING,
         abi: STAKING_ABI,
-        functionName: "updatePool",
+        functionName: "updatePoolRewardRate",
         args: [
           BigInt(poolId),
-          BigInt(updateRewardRate),
-          parseTokenAmount(updateMinStakeAmount),
-          poolActive
+          BigInt(updateRewardRate)
         ],
         account: address as `0x${string}`,
         chain: sepolia,
@@ -117,7 +115,7 @@ export function StakingAdmin() {
       const hash = await walletClient.writeContract({
         address: CONTRACTS.THY_STAKING,
         abi: STAKING_ABI,
-        functionName: "fundRewardPool",
+        functionName: "addRewardPool",
         args: [parseTokenAmount(fundAmount)],
         account: address as `0x${string}`,
         chain: sepolia,
